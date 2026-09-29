@@ -1,0 +1,1 @@
+import{t as e}from"./framework~index~page~page~page~layout~page~page~page~app-page-cache-render~app-page-cache~a~g77juknf-BwGQ0P3o.js";import{t}from"./access-DDd6bWMR.js";var n=e();function r(){return(0,n.jsx)(t,{scope:`admin`,children:(0,n.jsx)(n.Fragment,{})})}export{r as default};
