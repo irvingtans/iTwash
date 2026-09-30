@@ -1,4 +1,0 @@
-'use client';
-import {ReactNode} from 'react';
-export function Header({staff=false}:{staff?:boolean}){return <header><a className="brand" href="/"><img className="brand-logo" src="/itwash-logo.png" alt="iT Wash" width="1225" height="402"/></a>{staff?<nav><a href="/karyawan">Antrean cucian</a><a href="/karyawan/pelanggan">Data pelanggan</a><a href="/">Cek cucian</a><button onClick={async()=>{await fetch('/api/auth',{method:'DELETE'});location.href='/'}}>Kunci akses</button></nav>:<span className="location">Premium Wash Services</span>}</header>}
-export function Footer(){return <footer><span>iT Wash · <a href="https://www.instagram.com/itautoworks/" target="_blank" rel="noopener noreferrer">@itautoworks</a> · <a href="tel:+6288987222204" style={{whiteSpace:'nowrap'}}>0889 8722 2204</a></span><div className="footer-access"><a href="/admin">Admin</a></div></footer>}
