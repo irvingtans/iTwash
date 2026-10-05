@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "itwash",
+  "main": "vinext/server/fetch-handler",
+  "compatibility_date": "2026-05-15",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": true,
+  "preview_urls": false,
+  "keep_vars": true,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "itwash-production",
+      "database_id": "a21b08bc-46f7-4cfa-8838-ae2ae9c69d53",
+      "migrations_dir": "drizzle",
+      "migrations_table": "d1_migrations"
+    }
+  ]
+}

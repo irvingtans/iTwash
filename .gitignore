@@ -1,0 +1,77 @@
+# Dependencies and package-manager state
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches/
+!.yarn/plugins/
+!.yarn/releases/
+!.yarn/versions/
+.npm/
+.pnpm-store/
+
+# Framework output and generated build files
+.next/
+.vinext/
+/dist/
+/out/
+# build/ also contains required application source imported by vite.config.ts.
+/build/*
+!/build/sites-vite-plugin.ts
+!/build/sites-vite-plugin.LICENSE
+*.tsbuildinfo
+next-env.d.ts
+
+# Test reports, caches, and temporary files
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+.cache/
+.parcel-cache/
+.turbo/
+.eslintcache
+.stylelintcache
+/tmp/
+/temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Logs and OS metadata
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Local credentials; only the blank template is committed
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+*.pem
+*.key
+
+# Local Cloudflare data, deployment state, and agent artifacts
+.wrangler/
+.vercel/
+.sites-runtime/
+.agents/
+.codex/
+/outputs/
+/work/
+
+# Deployment verification output and private database exports
+/cloudflare-dry-run/
+/backups/
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm

@@ -2,6 +2,8 @@
 
 Aplikasi antrean cucian, pelacakan pelanggan, dashboard owner, dan invoice PDF iT Wash / iTworks.
 
+**Deploy aplikasi penuh ke Cloudflare:** ikuti [panduan Cloudflare Workers](CLOUDFLARE-DEPLOY.md).
+
 **Ingin mengunggah ke GitHub?** Ikuti [panduan upload](GITHUB-UPLOAD.md).
 
 Source ini menggunakan React/Vinext, Cloudflare Workers, dan D1. File konfigurasi lokal dan data pelanggan tidak disertakan. Salin `.env.example` ke `.env`, isi PIN lokal Anda, lalu ikuti petunjuk penyiapan database di bawah.

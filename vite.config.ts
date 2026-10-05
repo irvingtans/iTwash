@@ -1,4 +1,5 @@
 import vinext from "vinext";
+import cloudflareProduction from "./wrangler.cloudflare.json";
 import { defineConfig } from "vite";
 import hostingConfig from "./.openai/hosting.json";
 import { readExecutionProfile } from "./scripts/execution-profile.mjs";
@@ -11,6 +12,7 @@ const { d1, r2 } = hostingConfig;
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
+const directCloudflare = process.env.ITWASH_CLOUDFLARE === "1";
 const managedLinux = readExecutionProfile() === "managed-linux";
 
 const localBindingConfig = {
@@ -57,11 +59,11 @@ export default defineConfig(async () => {
     },
     plugins: [
       vinext(),
-      sites({ mockAuth: !managedLinux }),
+      ...(!directCloudflare ? [sites({ mockAuth: !managedLinux })] : []),
       cloudflare({
         viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
         inspectorPort: false,
-        config: localBindingConfig,
+        config: directCloudflare ? cloudflareProduction : localBindingConfig,
       }),
     ],
   };
