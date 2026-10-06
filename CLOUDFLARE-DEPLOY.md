@@ -94,3 +94,23 @@ Konfigurasi ini bukan salinan database lama. Jika riwayat lama harus tetap ada, 
 - https://developers.cloudflare.com/workers/configuration/secrets/
 
 Versi dependency yang sudah dikunci tetap digunakan; tidak ada upgrade framework sebagai bagian pekerjaan ini.
+
+## Dynamic QRIS (InterActive)
+
+The application uses the official Create Invoice and Check Invoice APIs. NMID alone is insufficient: request Open API activation, APIKEY, and mID from InterActive for the existing IT WASH merchant (NMID ID1025433287535).
+
+In Cloudflare → Workers & Pages → itwash → Settings → Variables and Secrets, add **Secret** values `QRIS_API_KEY` and `QRIS_MID` from the activation email, then deploy. Never paste credentials into GitHub, source code, screenshots, or chat. These are runtime secrets, not build variables. Without both values, existing static QRIS remains available and automatic verification is disabled.
+
+Ask InterActive to configure this webhook URL for the merchant:
+
+`https://itwash.irvingtans.workers.dev/api/qris/webhook`
+
+The documented webhook has no signature. The application never trusts its payment status: it looks up the stored provider invoice and verifies it with the authenticated provider API. Unknown invoices do not trigger provider calls. Status checks are throttled to once per minute per invoice; the cashier can also press **Cek pembayaran QRIS**. UI refreshes only read the local database and never continuously poll InterActive.
+
+Apply migration `0006_dynamic_qris.sql` through the normal deploy command before publishing code; do not recreate D1 or replay old migrations. The table retains provider invoices and payment reconciliation state. Amount edits and manual payments are blocked while a generated QR is active. After expiry, the cashier must verify the old invoice is unpaid before another QR or payment method is allowed. Provider errors do not mark orders paid or unlock them prematurely. A lost generation response is locked for its 30 minute lifetime; reopening the payment dialog recovers any persisted invoice.
+
+A provider-confirmed payment updates revenue once; pickup remains a separate staff action. Conflicting/late receipts are flagged **Perlu rekonsiliasi owner** instead of overwriting another payment. Staff/owner see verified receipts from the past 24 hours. Review unresolved items against the InterActive merchant dashboard; do not ask customers to pay again merely because verification timed out. Voiding a sale does not refund a QRIS payment.
+
+Validate locally with `node scripts/test-qris.mjs` and `npm run build:cloudflare`. Tests use an in-memory database and fake provider responses. A successful build does **not** prove live merchant activation. InterActive production scans move real funds; obtain the owner's explicit approval before any real-money test. Verify Open API activation, correct merchant/amount, verification, notifications, and paid invoice behavior during the owner's first authorized live payment.
+
+Official provider documentation: https://qris.id/api-doc/create-invoice.php and https://qris.id/api-doc/check-invoice.php and https://qris.id/api-doc/webhook.php
