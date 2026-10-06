@@ -1,4 +1,4 @@
-import {priceFor} from '../../../lib/pricing';
+import {priceFor,revisedService} from '../../../lib/pricing';
 import {database} from '../../../db/store';
 import {normalizePhone} from '../../../lib/wash';
 import {authorized,denied,json,sameOrigin,staffFields} from '../../../lib/server';
@@ -23,8 +23,16 @@ export async function POST(req:Request){try{
 }catch(e){console.error(e);return json({error:'Cucian belum tersimpan. Silakan coba lagi.'},503)}}
 export async function PATCH(req:Request){try{
  if(!await authorized('staff'))return denied();if(!sameOrigin(req))return json({error:'Permintaan tidak diizinkan.'},403);
- const b=await req.json() as {id:string;status?:number;action?:string;amount?:number;paymentMethod?:string};if(typeof b.id!=='string')return json({error:'Data tidak valid.'},400);
- if(b.action==='pay'||b.action==='checkout'){
+ const b=await req.json() as {id:string;status?:number;action?:string;amount?:number;paymentMethod?:string;extras?:string[];updated?:number};if(typeof b.id!=='string')return json({error:'Data tidak valid.'},400);
+ if(b.action==='addons'){
+  if(!Array.isArray(b.extras)||b.extras.some(x=>typeof x!=='string')||!Number.isSafeInteger(b.updated))return json({error:'Add-on tidak valid.'},400);
+  const db=database(),existing=await db.prepare('SELECT wash_type AS washType,amount,updated FROM jobs WHERE id=? AND category=\'mobil\' AND paid_at IS NULL AND status<3 AND voided_at IS NULL').bind(b.id).first<{washType:string;amount:number|null;updated:number}>();
+  if(!existing)return json({error:'Add-on hanya dapat diubah pada mobil yang belum dibayar dan belum diambil.'},409);
+  const revised=revisedService(existing.washType,existing.amount,b.extras);
+  if(!revised)return json({error:'Pilihan add-on atau harga cucian tidak valid.'},400);
+  const result=await db.prepare('UPDATE jobs SET wash_type=?,amount=?,updated=? WHERE id=? AND updated=? AND paid_at IS NULL AND status<3 AND voided_at IS NULL').bind(revised.washType,revised.amount,Math.max(Date.now(),existing.updated+1),b.id,b.updated!).run();
+  if(!result.meta.changes)return json({error:'Transaksi berubah. Tutup formulir dan muat ulang antrean.'},409);
+ }else if(b.action==='pay'||b.action==='checkout'){
   const checkout=b.action==='checkout';
   const existing=await database().prepare('SELECT amount,paid_at AS paidAt,status FROM jobs WHERE id=? AND voided_at IS NULL').bind(b.id).first<{amount:number|null;paidAt:number|null;status:number}>();
   if(!existing)return json({error:'Cucian tidak ditemukan.'},404);
@@ -40,8 +48,8 @@ export async function PATCH(req:Request){try{
   if(amount===undefined||!Number.isSafeInteger(amount)||amount<0||amount>100000000)return json({error:'Nominal pembayaran tidak valid.'},400);
   if(existing.amount!==null&&b.amount!==existing.amount)return json({error:'Nominal harus sesuai harga cucian yang tercatat.'},400);
   const r=checkout
-   ?await database().prepare('UPDATE jobs SET amount=COALESCE(amount,?),paid_at=COALESCE(paid_at,?),payment_method=CASE WHEN paid_at IS NULL THEN ? ELSE payment_method END,status=3,updated=? WHERE id=? AND status=2 AND voided_at IS NULL').bind(amount,Date.now(),b.paymentMethod!,Date.now(),b.id).run()
-   :await database().prepare('UPDATE jobs SET amount=COALESCE(amount,?),paid_at=?,payment_method=?,updated=? WHERE id=? AND paid_at IS NULL AND voided_at IS NULL').bind(amount,Date.now(),b.paymentMethod!,Date.now(),b.id).run();
+   ?await database().prepare('UPDATE jobs SET amount=COALESCE(amount,?),paid_at=COALESCE(paid_at,?),payment_method=CASE WHEN paid_at IS NULL THEN ? ELSE payment_method END,status=3,updated=? WHERE id=? AND status=2 AND voided_at IS NULL AND amount IS ?').bind(amount,Date.now(),b.paymentMethod!,Date.now(),b.id,existing.amount).run()
+   :await database().prepare('UPDATE jobs SET amount=COALESCE(amount,?),paid_at=?,payment_method=?,updated=? WHERE id=? AND paid_at IS NULL AND voided_at IS NULL AND amount IS ?').bind(amount,Date.now(),b.paymentMethod!,Date.now(),b.id,existing.amount).run();
   if(!r.meta.changes)return json({error:'Transaksi sudah berubah. Muat ulang antrean.'},409);
  }else{
   if(!Number.isInteger(b.status)||b.status!<1||b.status!>2)return json({error:'Gunakan konfirmasi pembayaran untuk pengambilan cucian.'},400);
