@@ -13,9 +13,11 @@ export const pinAttempts=sqliteTable('pin_attempts',{key:text('key').primaryKey(
 export const pinSettings=sqliteTable('pin_settings',{scope:text('scope').primaryKey(),pinHash:text('pin_hash').notNull(),salt:text('salt').notNull(),updated:integer('updated').notNull()});
 
 export const employees=sqliteTable('employees',{
- id:text('id').primaryKey(),name:text('name').notNull(),bank:text('bank').notNull(),account:text('account').notNull(),rate:integer('rate').notNull(),
+ id:text('id').primaryKey(),name:text('name').notNull(),bank:text('bank').notNull(),account:text('account').notNull(),rate:integer('rate').notNull(),payType:text('pay_type').notNull().default('daily'),monthlyRate:integer('monthly_rate').notNull().default(0),
 });
 export const salaries=sqliteTable('salaries',{
  id:text('id').primaryKey(),employeeId:text('employee_id').notNull(),week:text('week').notNull(),date:text('date').notNull(),
  detail:text('detail').notNull(),total:integer('total').notNull(),paidAt:integer('paid_at'),version:integer('version').notNull().default(1),
 },t=>[index('idx_salaries_paid').on(t.paidAt),uniqueIndex('idx_salaries_employee_week').on(t.employeeId,t.week)]);
+
+export const jobEdits=sqliteTable('job_edits',{id:text('id').primaryKey(),jobId:text('job_id').notNull(),scope:text('scope').notNull(),before:text('before').notNull(),after:text('after').notNull(),reason:text('reason').notNull(),created:integer('created').notNull()},t=>[index('idx_job_edits_job').on(t.jobId,t.created)]);
