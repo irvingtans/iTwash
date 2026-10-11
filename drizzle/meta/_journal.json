@@ -43,6 +43,13 @@
       "when": 1790609177966,
       "tag": "0005_reset_owner_pin",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1791717068280,
+      "tag": "0006_weekly_payroll",
+      "breakpoints": true
     }
   ]
 }
