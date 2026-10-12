@@ -57,6 +57,13 @@
       "when": 1791736657416,
       "tag": "0007_flexible_payroll_job_edits",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1791765253833,
+      "tag": "0008_operating_expenses",
+      "breakpoints": true
     }
   ]
 }
