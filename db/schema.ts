@@ -21,3 +21,5 @@ export const salaries=sqliteTable('salaries',{
 },t=>[index('idx_salaries_paid').on(t.paidAt),uniqueIndex('idx_salaries_employee_week').on(t.employeeId,t.week)]);
 
 export const jobEdits=sqliteTable('job_edits',{id:text('id').primaryKey(),jobId:text('job_id').notNull(),scope:text('scope').notNull(),before:text('before').notNull(),after:text('after').notNull(),reason:text('reason').notNull(),created:integer('created').notNull()},t=>[index('idx_job_edits_job').on(t.jobId,t.created)]);
+
+export const expenses=sqliteTable('expenses',{id:text('id').primaryKey(),date:text('date').notNull(),description:text('description').notNull(),amount:integer('amount').notNull(),recorder:text('recorder').notNull(),created:integer('created').notNull()},t=>[index('idx_expenses_date').on(t.date)]);
