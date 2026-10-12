@@ -17,9 +17,11 @@ export const employees=sqliteTable('employees',{
 });
 export const salaries=sqliteTable('salaries',{
  id:text('id').primaryKey(),employeeId:text('employee_id').notNull(),week:text('week').notNull(),date:text('date').notNull(),
- detail:text('detail').notNull(),total:integer('total').notNull(),paidAt:integer('paid_at'),version:integer('version').notNull().default(1),
-},t=>[index('idx_salaries_paid').on(t.paidAt),uniqueIndex('idx_salaries_employee_week').on(t.employeeId,t.week)]);
+ detail:text('detail').notNull(),total:integer('total').notNull(),paidAt:integer('paid_at'),version:integer('version').notNull().default(1),deletedAt:integer('deleted_at'),deleteReason:text('delete_reason').notNull().default(''),
+},t=>[index('idx_salaries_paid').on(t.paidAt),uniqueIndex('idx_salaries_employee_week').on(t.employeeId,t.week).where(sql`${t.deletedAt} IS NULL`)]);
 
 export const jobEdits=sqliteTable('job_edits',{id:text('id').primaryKey(),jobId:text('job_id').notNull(),scope:text('scope').notNull(),before:text('before').notNull(),after:text('after').notNull(),reason:text('reason').notNull(),created:integer('created').notNull()},t=>[index('idx_job_edits_job').on(t.jobId,t.created)]);
 
 export const expenses=sqliteTable('expenses',{id:text('id').primaryKey(),date:text('date').notNull(),description:text('description').notNull(),amount:integer('amount').notNull(),recorder:text('recorder').notNull(),created:integer('created').notNull()},t=>[index('idx_expenses_date').on(t.date)]);
+
+export const contracts=sqliteTable('contracts',{id:text('id').primaryKey(),detail:text('detail').notNull(),created:integer('created').notNull(),updated:integer('updated').notNull(),version:integer('version').notNull().default(1)});
