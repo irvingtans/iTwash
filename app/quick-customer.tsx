@@ -1,0 +1,8 @@
+'use client';
+import {useEffect,useState} from 'react';
+import {Job} from '../lib/wash';
+export default function QuickCustomer({onSelect}:{onSelect:(j:Job)=>void}){
+ const [query,setQuery]=useState(''),[rows,setRows]=useState<Job[]>([]),[loading,setLoading]=useState(false),[error,setError]=useState('');
+ useEffect(()=>{const c=new AbortController();setRows([]);setError('');if(query.trim().length<3){setLoading(false);return}setLoading(true);const t=setTimeout(()=>fetch('/api/customers?quick='+encodeURIComponent(query),{signal:c.signal}).then(async r=>{const d=await r.json() as any;if(!r.ok)throw Error(d.error);setRows(d.matches)}).catch(e=>{if(!c.signal.aborted)setError(e.message)}).finally(()=>{if(!c.signal.aborted)setLoading(false)}),250);return()=>{clearTimeout(t);c.abort()}},[query]);
+ return <section className="quick-customer"><label>Cari pelanggan lama<input type="search" autoComplete="off" placeholder="Ketik plat atau nomor HP" value={query} maxLength={22} onChange={e=>setQuery(e.target.value)}/></label><small>Minimal 3 karakter. Pilih data di bawah untuk mengisi formulir.</small>{loading?<p>Mencari…</p>:error?<p className="error">{error}</p>:rows.length?<div>{rows.map(r=><button type="button" className="quick-match" key={r.id} onClick={()=>{onSelect(r);setQuery('')}}><span><strong>{r.category==='sepatu'?r.customerName:r.plate}</strong><small>{r.customerName} · {r.phone}{r.vehicle?' · '+r.vehicle:''}</small></span><span>Gunakan →</span></button>)}</div>:query.trim().length>=3&&<p className="field-note">Belum ditemukan. Isi data pelanggan baru di bawah.</p>}</section>
+}
