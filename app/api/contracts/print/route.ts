@@ -1,0 +1,4 @@
+import {database} from '../../../../db/store';
+import {authorized,denied,json} from '../../../../lib/server';
+import {contractHTML} from '../../../../lib/contracts';
+export async function GET(req:Request){if(!await authorized('owner'))return denied();try{const id=new URL(req.url).searchParams.get('id');if(!id||id.length>80)return json({error:'Kontrak tidak valid.'},400);const r=await database().prepare('SELECT detail FROM contracts WHERE id=?').bind(id).first<any>();if(!r)return json({error:'Kontrak tidak ditemukan.'},404);return new Response(contractHTML(JSON.parse(r.detail)),{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'no-referrer'}})}catch{return json({error:'Kontrak belum dapat dicetak.'},503)}}
