@@ -24,10 +24,12 @@ export async function POST(req:Request){try{
  const timestamp=Date.parse(date+'T'+time+':00+07:00');
  if(!Number.isFinite(timestamp)||new Date(timestamp+7*3600000).toISOString().slice(0,16)!==date+'T'+time)return json({error:'Tanggal atau waktu tidak valid.'},400);
  if(!Number.isSafeInteger(b.amount)||b.amount<0||b.amount>100000000)return json({error:'Nominal harus berupa angka rupiah antara 0 dan 100.000.000.'},400);
- if(b.confirmPaid!==true||!['tunai','qris','transfer'].includes(b.paymentMethod))return json({error:'Pilih metode dan konfirmasi pembayaran telah diterima.'},400);
+ const paymentStatus=b.paymentStatus??'paid';if(!['paid','unpaid'].includes(paymentStatus))return json({error:'Pilih status pembayaran yang valid.'},400);
+ const unpaid=paymentStatus==='unpaid';if(unpaid&&b.amount===0)return json({error:'Nominal penagihan harus lebih dari nol.'},400);
+ if(!unpaid&&(b.confirmPaid!==true||!['tunai','qris','transfer'].includes(b.paymentMethod)))return json({error:'Pilih metode dan konfirmasi pembayaran telah diterima.'},400);
  if(b.brand!==undefined&&!['itwash','itworks'].includes(b.brand))return json({error:'Pilih logo invoice yang valid.'},400);
  const id='CUSTOM-'+crypto.randomUUID().replaceAll('-','').slice(0,16);
- const job:Job={id,groupId:id,category:'mobil',customerName,phone:'',plate,vehicle,washType:product,brand:'',color:'',status:3,created:timestamp,updated:timestamp,estimatedAt:null,amount:b.amount,paidAt:timestamp,paymentMethod:b.paymentMethod};
- const bytes=await invoicePDF([job],{custom:true,brand:b.brand||'itwash'});
- return new Response(new Uint8Array(bytes),{headers:{'Content-Type':'application/pdf','Content-Disposition':`attachment; filename="${invoiceNumber(job)}-LUNAS.pdf"`,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
+ const job:Job={id,groupId:id,category:'mobil',customerName,phone:'',plate,vehicle,washType:product,brand:'',color:'',status:3,created:timestamp,updated:timestamp,estimatedAt:null,amount:b.amount,paidAt:unpaid?null:timestamp,paymentMethod:unpaid?'':b.paymentMethod};
+ const bytes=await invoicePDF([job],{custom:true,brand:b.brand||'itwash',unpaid});
+ return new Response(new Uint8Array(bytes),{headers:{'Content-Type':'application/pdf','Content-Disposition':`attachment; filename="${invoiceNumber(job)}-${unpaid?'BELUM-DIBAYAR':'LUNAS'}.pdf"`,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 }catch(e){console.error(e);return json({error:'Invoice belum dapat dibuat. Coba lagi.'},503)}}
