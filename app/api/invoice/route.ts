@@ -31,5 +31,5 @@ export async function POST(req:Request){try{
  const id='CUSTOM-'+crypto.randomUUID().replaceAll('-','').slice(0,16);
  const job:Job={id,groupId:id,category:'mobil',customerName,phone:'',plate,vehicle,washType:product,brand:'',color:'',status:3,created:timestamp,updated:timestamp,estimatedAt:null,amount:b.amount,paidAt:unpaid?null:timestamp,paymentMethod:unpaid?'':b.paymentMethod};
  const bytes=await invoicePDF([job],{custom:true,brand:b.brand||'itwash',unpaid});
- return new Response(new Uint8Array(bytes),{headers:{'Content-Type':'application/pdf','Content-Disposition':`attachment; filename="${invoiceNumber(job)}-${unpaid?'BELUM-DIBAYAR':'LUNAS'}.pdf"`,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
+ return new Response(new Uint8Array(bytes),{headers:{'Content-Type':'application/pdf','Content-Disposition':`attachment; filename="${invoiceNumber(job)}-${unpaid?'MENUNGGU-PEMBAYARAN':'LUNAS'}.pdf"`,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 }catch(e){console.error(e);return json({error:'Invoice belum dapat dibuat. Coba lagi.'},503)}}
